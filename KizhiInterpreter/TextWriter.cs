@@ -1,17 +1,18 @@
-﻿using KizhiInterpreter.Commands;
+﻿using System.Reflection.Metadata.Ecma335;
+using KizhiInterpreter.Commands;
 
 namespace KizhiInterpreter;
 
 public class TextWriter
 {
-    public static List<Variable> variables = new();
+    private readonly List<Variable> _variables = new();
 
 
     public bool SetVariable(Command command)
     {
-        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        var variable = _variables.FirstOrDefault(u => u.Name == command.Variable.Name);
         if (variable is null)
-            variables.Add(command.Variable);
+            _variables.Add(command.Variable);
         else
             variable.Value = command.Variable.Value;
         return true;
@@ -19,9 +20,8 @@ public class TextWriter
 
     public bool SubVariable(Command command)
     {
-        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
-        if (variable is null)
-            return false;
+        var variable = _variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
 
         variable.Value -= command.Variable.Value;
         return true;
@@ -29,9 +29,8 @@ public class TextWriter
 
     public bool PrintVariable(Command command)
     {
-        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
-        if (variable is null)
-            return false;
+        var variable = _variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
 
         Console.WriteLine(variable.Value);
         return true;
@@ -39,11 +38,11 @@ public class TextWriter
 
     public bool RemoveVariable(Command command)
     {
-        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
-        if (variable is null)
-            return false;
+        var variable = _variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
 
-        variables.RemoveAll(u => u.Name == command.Variable.Name);
+        _variables.RemoveAll(u => u.Name == command.Variable.Name);
         return true;
     }
+
 }
