@@ -1,14 +1,19 @@
 ﻿
 TextWriter writer = new();
 Interpreter interpreter = new(writer);
-interpreter.ExecuteLine(Console.ReadLine());
-interpreter.ExecuteLine(Console.ReadLine());
+
+while (true)
+{
+    interpreter.ExecuteLine(Console.ReadLine());
+}
 
 
 
 public class Interpreter
 {
     private TextWriter _writer;
+    private bool _operationResult = true;
+
 
     public Interpreter(TextWriter writer)
     {
@@ -18,62 +23,88 @@ public class Interpreter
     public void ExecuteLine(string command)
     {
         Command com = new Command(command);
-        switch (com.Token.MyType)
+        switch (com.CommandType)
         {
             case CommandType.Set:
                 _writer.SetVariable(com);
                 break;
 
             case CommandType.Sub:
-                _writer.SubVariable(com);
+                _operationResult = _writer.SubVariable(com);
                 break;
+
             case CommandType.Print:
-                _writer.PrintVariable(com);
+                _operationResult =_writer.PrintVariable(com);
                 break;
+
             case CommandType.Rem:
-                _writer.RemoveVariable(com);
+                _operationResult = _writer.RemoveVariable(com);
                 break;
+
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new Exception("Нет такой команды");
         }
+        if(!_operationResult)
+            Console.WriteLine("Переменная отсутствует в памяти");
     }
 
 }
 
+public class Variable
+{
+    public string Name;
+    public int Value;
+
+    public Variable(string name)
+    {
+        Name = name;
+    }
+}
+
+
+
 public class TextWriter
 {
-    public List<Command> commands = new();
+    private List<Variable> variables = new();
+
 
     public void SetVariable(Command command)
     {
-        if (commands.FirstOrDefault(u => u.Variable == command.Variable) is null)
-            commands.Add(command);
+        if (variables.FirstOrDefault(u => u.Name == command.Variable.Name) is null)
+            variables.Add(command.Variable);
         else 
-            commands.Where(u => u.Variable == command.Variable).Select(u => u.Value = command.Value);
+            variables.Where(u => u.Name == command.Variable.Name).Select(u => u.Value = command.Variable.Value);
     }
 
-    public void SubVariable(Command command)
+    public bool SubVariable(Command command)
     {
-
+        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
+        variable.Value -= command.Variable.Value;
+        return true;
     }
 
-    public void PrintVariable(Command command)
+    public bool PrintVariable(Command command)
     {
-
+        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
+        Console.WriteLine(command.Variable.Value);
+        return true;
     }
 
-    public void RemoveVariable(Command command)
+    public bool RemoveVariable(Command command)
     {
-
+        var variable = variables.FirstOrDefault(u => u.Name == command.Variable.Name);
+        if (variable is null) return false;
+        variables.RemoveAll(u => u.Name == command.Variable.Name);
+        return true;
     }
 }
 
 public class Command
 {
-    public Token Token;
-    public string Variable;
-    public int Value;
-    private int _commandLength;
+    public CommandType CommandType;
+    public Variable Variable;
 
     public Command(string command)
     {
@@ -83,58 +114,28 @@ public class Command
     private void LexCommand(string command)
     {
         var cells = command.Split(" ");
-        _commandLength = cells.Length;
-        if (_commandLength >= 2)
+        if (cells.Length >= 2)
         {
-            Token = new Token(cells[0]);
-            Variable = cells[1];
+            CommandType = GetCommand(cells[0]);
+            Variable = new Variable(cells[1]);
         }
-
-        if (_commandLength == 3)
-            int.TryParse(cells[2], out Value);
-
+        if (cells.Length == 3)
+            int.TryParse(cells[2], out Variable.Value);
     }
 
-    public override string ToString()
+    private CommandType GetCommand(string text)
     {
-        switch (_commandLength)
-        {
-            case 2:
-                return $"{Token.ToString().ToLower()} {Variable}";
-            case 3:
-                return $"{Token.ToString().ToLower()} {Variable} {Value}";
-            default: throw new ArgumentException(message: "Wrong command.");
-        }
-    }
-}
-public class Token
-{
-
-    public CommandType MyType;
-
-    public Token(string token)
-    {
-        MyType = GetCommandToken(token);
-    }
-
-    private CommandType GetCommandToken(string text)
-    {
-        MyType = text switch
+        CommandType = text switch
         {
             "set" => CommandType.Set,
             "sub" => CommandType.Sub,
             "print" => CommandType.Print,
             "rem" => CommandType.Rem,
         };
-        return MyType;
+        return CommandType;
     }
-
-    public override string ToString()
-    {
-        return MyType.ToString().ToLower();
-    }
-
 }
+
 public enum CommandType
 {
     Set,
