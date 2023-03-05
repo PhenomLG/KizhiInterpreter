@@ -18,10 +18,14 @@ public class Command
             case 3:
                 int.TryParse(cells[2], out Variable.Value);
                 goto case 2;
+          
             case 2:
                 CommandType = GetCommand(cells[0]);
-                Variable.Name = cells[1];
+                if (IsLettersOnly(cells[1]))
+                    Variable.Name = cells[1];
+                else goto default;
                 break;
+           
             default:
                 CommandType = CommandType.Unknown;
                 break;
@@ -36,7 +40,11 @@ public class Command
             "sub" => CommandType.Subtract,
             "print" => CommandType.Print,
             "rem" => CommandType.Remove,
+            _ => CommandType.Unknown
         };
         return CommandType;
     }
+
+    private bool IsLettersOnly(string text) => text.All(c => c < '0' || c > '9');
+
 }
