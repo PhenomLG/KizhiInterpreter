@@ -3,7 +3,8 @@
 public enum CommandType
 {
     Set,
-    Sub,
+    Subtract,
     Print,
-    Rem
+    Remove,
+    Unknown
 }

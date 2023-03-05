@@ -22,7 +22,7 @@ public class Interpreter
                 _operationResult = _writer.SetVariable(com);
                 break;
 
-            case CommandType.Sub:
+            case CommandType.Subtract:
                 _operationResult = _writer.SubVariable(com);
                 break;
 
@@ -30,12 +30,17 @@ public class Interpreter
                 _operationResult = _writer.PrintVariable(com);
                 break;
 
-            case CommandType.Rem:
+            case CommandType.Remove:
                 _operationResult = _writer.RemoveVariable(com);
                 break;
 
+            case CommandType.Unknown:
+                Console.WriteLine("Некорретный ввод. Попробуйте еще раз.");
+                break;
+
             default:
-                throw new Exception("Нет такой команды");
+                Console.WriteLine("Неправильная команда");
+                break;
         }
         if (!_operationResult)
             Console.WriteLine("Переменная отсутствует в памяти");

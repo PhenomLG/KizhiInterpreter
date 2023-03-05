@@ -3,7 +3,7 @@
 public class Command
 {
     public CommandType CommandType;
-    public Variable Variable;
+    public Variable Variable = new();
 
     public Command(string command)
     {
@@ -13,13 +13,19 @@ public class Command
     private void LexCommand(string command)
     {
         var cells = command.Split(" ");
-        if (cells.Length >= 2)
+        switch (cells.Length)
         {
-            CommandType = GetCommand(cells[0]);
-            Variable = new Variable(cells[1]);
+            case 3:
+                int.TryParse(cells[2], out Variable.Value);
+                goto case 2;
+            case 2:
+                CommandType = GetCommand(cells[0]);
+                Variable.Name = cells[1];
+                break;
+            default:
+                CommandType = CommandType.Unknown;
+                break;
         }
-        if (cells.Length == 3)
-            int.TryParse(cells[2], out Variable.Value);
     }
 
     private CommandType GetCommand(string text)
@@ -27,9 +33,9 @@ public class Command
         CommandType = text switch
         {
             "set" => CommandType.Set,
-            "sub" => CommandType.Sub,
+            "sub" => CommandType.Subtract,
             "print" => CommandType.Print,
-            "rem" => CommandType.Rem,
+            "rem" => CommandType.Remove,
         };
         return CommandType;
     }
